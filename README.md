@@ -71,3 +71,15 @@ The pending row in the sample (no Reference value) is intentionally skipped.
 - **Card scope**: Only tested on US personal Amex cards (Gold and Platinum). Business/corporate card exports may use different column headers.
 
 - **Categorization**: All transactions land in `expenses:unclassified`. There's no rules engine here. Use hledger's [`--rules-file`](https://hledger.org/hledger.html#csv-format) to handle categorization after import if you want it automated.
+
+---
+
+## Tests
+
+`test_convert.py` runs four behavioral checks against `sample_amex.csv` using subprocess -- no test framework required:
+
+```bash
+python test_convert.py
+```
+
+Covers: golden output, pending row skip, missing file exit code, and `--account` flag.
