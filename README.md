@@ -4,6 +4,8 @@ A Python script to convert American Express CSV exports into `hledger`-compatibl
 
 Amex exports charges as positive numbers and payments/credits as negative. That's the inverse of standard double-entry convention, where a charge against a liability account is a credit (negative). This script flips the signs, normalizes the date format, and writes hledger transactions to stdout.
 
+This tool intentionally avoids abstraction beyond its specific use case to preserve clarity and correctness.
+
 ---
 
 ## Requirements
