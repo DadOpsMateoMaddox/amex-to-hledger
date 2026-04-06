@@ -3,6 +3,7 @@ import csv
 import sys
 import argparse
 from datetime import datetime
+from decimal import Decimal, InvalidOperation
 
 
 def parse_args():
@@ -52,13 +53,23 @@ def process_csv(filepath, account_name):
             if not row.get("Reference", "").strip():
                 continue
 
-            date = parse_date(row["Date"])
+            try:
+                date = parse_date(row["Date"])
+            except ValueError as e:
+                print(f"Warning: skipping row -- {e} (description: {row.get('Description', '?')!r})", file=sys.stderr)
+                continue
+
             desc = row["Description"].strip().replace('"', "")
 
             # Amex exports charges as positive and payments/credits as negative.
             # hledger expects a liability increase (charge) to be negative on the
             # liability account, so we invert.
-            amount = float(row["Amount"]) * -1
+            # Decimal avoids binary float representation issues in financial output.
+            try:
+                amount = Decimal(row["Amount"].strip()) * -1
+            except InvalidOperation:
+                print(f"Warning: skipping row -- could not parse amount {row['Amount']!r} (description: {desc!r})", file=sys.stderr)
+                continue
 
             print(f"{date} * {desc}")
             print(f"    {account_name:<40}  ${amount:.2f}")
@@ -67,4 +78,7 @@ def process_csv(filepath, account_name):
 
 if __name__ == "__main__":
     args = parse_args()
-    process_csv(args.infile, args.account)
+    try:
+        process_csv(args.infile, args.account)
+    except BrokenPipeError:
+        sys.exit(0)
